@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+//can also use uuid(random unique string instead of autoincrement)
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  firstname   String? 
+  password    String 
+  blogs       Blog[]
+}
+
+model Blog {
+  blogid      Int       @id @default(autoincrement())
+  title       String
+  content     String
+  published   Boolean   @default(false)
+  authorId    Int
+  author      User      @relation(fields: [authorId], references: [id])
+
+}
