@@ -70,3 +70,29 @@ userRouter.post('/signup', async(c) => {
     const token = await sign({id : user.id} , c.env.JWT_SECRET)
     return c.json({token})
   })
+
+  userRouter.get('/getuser' , async (c) => {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+    const token = c.req.header("Authorization");
+    if (!token) {
+      c.status(401);
+      return c.json({ error: "Authorization header is missing" });
+    }
+    const payload = await decode(token).payload;
+    const userId = payload.id as number;
+    const user = await prisma.user.findUnique({
+      where : {
+       id : userId
+      }, 
+      select : {
+        firstname : true
+      }
+    })
+    if (!user) {
+      c.status(404);
+      return c.json({ error: "User not found" });
+    }
+    return c.json({ name: user.firstname });
+  })
